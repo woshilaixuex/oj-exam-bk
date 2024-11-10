@@ -1,0 +1,45 @@
+syntax = "v1"
+
+info (
+	title:   "软件部OJ机试"
+	desc:    "软件部OJ机试服务"
+	author:  "lyr1cs"
+	email:   "linyugang7295@gmail.com"
+	version: "v0"
+)
+
+type CheckRequest {
+	StudentID string `json:"student_id"`
+}
+
+type CheckResponse {
+	StudentID string `json:"student_id"`
+	Name      string `json:"name"`
+	Token     string `json:"token"`
+}
+
+type StartRequest {}
+
+type StartResponse {
+	StudentID string `json:"student_id"`
+	Name      string `json:"name"`
+	Account   string `json:"account"`
+	Password  string `json:"password"`
+}
+
+service exam-api {
+	@doc (
+		summary: "检查学生信息"
+		desc:    "通过学生ID检查学生的相关信息，如姓名和学号。"
+	)
+	@handler CheckHandler
+	post /check (CheckRequest) returns (CheckResponse)
+
+	@doc (
+		summary: "开始考试"
+		desc:    "使用账户和密码开始考试，并返回学生的考试相关信息。"
+	)
+	@handler ExamHandler
+	post /exam (StartRequest) returns (StartResponse)
+}
+
