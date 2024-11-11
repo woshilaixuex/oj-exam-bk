@@ -4,10 +4,8 @@ import (
 	"encoding/csv"
 	"io"
 	"strings"
-	"sync"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
 /*
@@ -18,25 +16,14 @@ import (
  */
 
 type ExamUser struct {
-	Account  string
-	Password string
-	Email    string
-	Name     string
+	Account  string `json:"account"`
+	Password string `json:"password"`
+	Email    string `json:"email"`
+	Name     string `json:"name"`
 }
-
-var (
-	ExamMutex sync.Mutex
-	Redis     *redis.Redis
-)
 
 func parseCSVData(data []byte) ([]ExamUser, error) {
 	reader := csv.NewReader(strings.NewReader(string(data)))
-	// 跳过第一行（头部）
-	_, err := reader.Read()
-	if err != nil {
-		logx.Errorf("failed to read CSV header: %v", err)
-		return nil, err
-	}
 
 	var users []ExamUser
 	for {
@@ -48,7 +35,7 @@ func parseCSVData(data []byte) ([]ExamUser, error) {
 			logx.Errorf("failed to read CSV record: %v", err)
 			return nil, err
 		}
-		// 假设 CSV 的列顺序为：account, password, email, name
+		// CSV 的列顺序为：account, password, email, name
 		if len(record) >= 4 {
 			user := ExamUser{
 				Account:  record[0],

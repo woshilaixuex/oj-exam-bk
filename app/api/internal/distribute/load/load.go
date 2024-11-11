@@ -1,6 +1,7 @@
 package load
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -22,8 +23,7 @@ const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 var (
 	FileIo    *os.File
 	FileMutex sync.RWMutex
-	ProNum    int = 50
-	StartNum  int = 1
+	ProNum    int = 2
 )
 
 func generateRandomPassword(length int) string {
@@ -34,14 +34,22 @@ func generateRandomPassword(length int) string {
 	return string(password)
 }
 
-func InitLoadServer(ctx context.Context, path string) ([]ExamUser, error) {
+func InitLoadServer(ctx context.Context, path string) {
 	data := openFile(path)
 	// 关闭文件
 	go func() {
 		<-ctx.Done()
 		FileIo.Close()
 	}()
-	return parseCSVData(data)
+	// 解析数据
+	btlist, err := parseCSVData(data)
+	if err != nil {
+		logx.Errorf("data parse slince err: %v", err)
+	}
+	err = UploadExamUsersToRedis("csd_test_l", btlist)
+	if err != nil {
+		logx.Errorf("redis push list err: %v", err)
+	}
 }
 
 // 初始化打开文件
@@ -72,9 +80,8 @@ func creatFile(path string) []byte {
 		panic(err)
 	}
 
-	// Optional: Write some initial content to the file
-	initialContent := []byte("account,password,email,name\n")
-	initialContent = append(initialContent, ProductData(StartNum)...)
+	initialContent := []byte("")
+	initialContent = append(initialContent, ProductData()...)
 	_, err = FileIo.Write(initialContent)
 	if err != nil {
 		logx.Errorf("file write error: %v", err)
@@ -83,15 +90,23 @@ func creatFile(path string) []byte {
 	return initialContent
 }
 
-func ProductData(start int) []byte {
-	var result []byte
-	for i := start; i < start+ProNum; i++ {
-		account := "csd" + fmt.Sprintf("%05d", i)
+func ProductData() []byte {
+	var buffer bytes.Buffer
+
+	for i := 0; i < ProNum; i++ {
+		exam_num, err := Redis.Incr("exam_num")
+		fmt.Print(exam_num)
+		if err != nil {
+			logx.Errorf("file write error: %v", err)
+			panic(err)
+		}
+
+		account := "csd" + fmt.Sprintf("%05d", exam_num)
 		password := generateRandomPassword(8)
 		email := fmt.Sprintf("%s@exam.com", account)
 		name := account
-		line := fmt.Sprintf("%s,%s,%s,%s\n", account, password, email, name)
-		result = append(result, []byte(line)...)
+		buffer.WriteString(fmt.Sprintf("%s,%s,%s,%s\n", account, password, email, name))
 	}
-	return result
+
+	return buffer.Bytes()
 }

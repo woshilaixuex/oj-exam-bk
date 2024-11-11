@@ -1,0 +1,57 @@
+version: '3.9'
+services:
+  mysql:
+    image: mysql:8.0.32
+    container_name: mysql-exam
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: 123456
+    networks:
+      - ojexam-network
+    depends_on:
+      - mysql-job-dbdata
+    ports:
+      - "23306:3306"
+    volumes:
+      - ./data/mysql/sql:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+    volumes_from:
+      - mysql-job-dbdata
+
+  # 自动加载数据
+  mysql-job-dbdata:
+    image: alpine:3.18.2
+    container_name: mysql-exam-dbdata
+    volumes:
+      - /var/lib/mysql
+
+  # Redis
+  redis:
+    image: redis:6.2.5
+    container_name: redis-exam
+    restart: always
+    hostname: redis
+    privileged: true
+    ports:
+      - 26379:6379
+    volumes:
+      - ./data/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - ojexam-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  ojexam-network:
+    driver: bridge

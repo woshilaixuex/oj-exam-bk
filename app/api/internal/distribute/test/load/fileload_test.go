@@ -35,14 +35,14 @@ func TestLoad(t *testing.T) {
 	flag.Parse()
 	var c Config
 	conf.MustLoad(*configFile, &c)
+	load.Redis = redis.MustNewRedis(c.Redis)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	data, _ := load.InitLoadServer(ctx, "./data/user_test.csv")
+	load.InitLoadServer(ctx, "./data/user_test.csv")
 	go func() {
 		var s string
 		fmt.Scanln(&s)
 		cancel()
 	}()
-	fmt.Print(data)
 	<-ctx.Done()
 }
