@@ -21,6 +21,10 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Path:    "/check",
 				Handler: CheckHandler(serverCtx),
 			},
+		},
+	)
+	server.AddRoutes(
+		[]rest.Route{
 			{
 				// 开始考试
 				Method:  http.MethodPost,
@@ -28,5 +32,6 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: ExamHandler(serverCtx),
 			},
 		},
+		rest.WithJwt(serverCtx.Config.JwtAuth.AccessSecret),
 	)
 }

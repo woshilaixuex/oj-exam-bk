@@ -2,16 +2,18 @@ package load
 
 import (
 	"encoding/csv"
+	"github/lyr1cs/v0/oj-exam-backend/app/api/internal/distribute/rule"
 	"io"
 	"strings"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
 /*
  * @Author: lyr1cs
  * @Email: linyugang7295@gmail.com
- * @Description:
+ * @Description: 数据绑定与实体模型
  * @Date: 2024-11-09 21:50
  */
 
@@ -50,4 +52,12 @@ func parseCSVData(data []byte) ([]ExamUser, error) {
 		}
 	}
 	return users, nil
+}
+
+type RedisService struct {
+	Redis *redis.Redis
+}
+type LockModel struct {
+	Model   rule.StrategyModel
+	Version string
 }

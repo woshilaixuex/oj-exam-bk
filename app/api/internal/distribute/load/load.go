@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github/lyr1cs/v0/oj-exam-backend/common/constm"
 	"io"
 	"math/rand"
 	"os"
@@ -21,17 +22,24 @@ import (
 const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 var (
-	FileIo    *os.File
-	FileMutex sync.RWMutex
-	ProNum    int = 2
+	FileIo           *os.File
+	FileMutex        sync.RWMutex
+	ProNum           int = 2
+	InitRedisService LoadRedisService
 )
 
-func generateRandomPassword(length int) string {
-	password := make([]byte, length)
-	for i := range password {
-		password[i] = charset[rand.Intn(len(charset))]
+// 生产随机数
+func generateRandomString(length int) string {
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
 	}
-	return string(password)
+	return string(b)
+}
+
+// 生产随机密码
+func generateRandomPassword(length int) string {
+	return generateRandomString(length)
 }
 
 func InitLoadServer(ctx context.Context, path string) {
@@ -46,7 +54,7 @@ func InitLoadServer(ctx context.Context, path string) {
 	if err != nil {
 		logx.Errorf("data parse slince err: %v", err)
 	}
-	err = UploadExamUsersToRedis("csd_test_l", btlist)
+	err = InitRedisService.InitUploadExamUsersToRedis("csd_test_l", btlist)
 	if err != nil {
 		logx.Errorf("redis push list err: %v", err)
 	}
@@ -90,18 +98,25 @@ func creatFile(path string) []byte {
 	return initialContent
 }
 
+// 生产数据除了初始化一遍不需要写入csv文件
 func ProductData() []byte {
 	var buffer bytes.Buffer
 
 	for i := 0; i < ProNum; i++ {
-		exam_num, err := Redis.Incr("exam_num")
-		fmt.Print(exam_num)
-		if err != nil {
-			logx.Errorf("file write error: %v", err)
-			panic(err)
+		var randomSuffix string
+		for {
+			randomSuffix = generateRandomString(5)
+			added, err := InitRedisService.AddToUniqueSet(constm.UNIQUESET_ID, randomSuffix)
+			if err != nil {
+				fmt.Println("Error interacting with Redis:", err)
+				return nil
+			}
+			if added == 1 {
+				break
+			}
 		}
 
-		account := "csd" + fmt.Sprintf("%05d", exam_num)
+		account := "csd" + randomSuffix
 		password := generateRandomPassword(8)
 		email := fmt.Sprintf("%s@exam.com", account)
 		name := account

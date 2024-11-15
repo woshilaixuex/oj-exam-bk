@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-
 	"github/lyr1cs/v0/oj-exam-backend/app/api/internal/config"
 	"github/lyr1cs/v0/oj-exam-backend/app/api/internal/handler"
 	"github/lyr1cs/v0/oj-exam-backend/app/api/internal/svc"
+	_ "github/lyr1cs/v0/oj-exam-backend/common/thread"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/logx"

@@ -7,5 +7,5 @@ package rule
  * @Date: 2024-11-07 12:52
  */
 
-type defultNode struct {
+type rule interface {
 }
