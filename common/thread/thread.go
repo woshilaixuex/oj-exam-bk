@@ -14,6 +14,10 @@ type gorpool struct {
 	Runners   *threading.TaskRunner
 }
 
+func (pool *gorpool) Schedule(task func()) {
+	pool.Runners.Schedule(task)
+}
+
 var Pool gorpool
 
 func init() {

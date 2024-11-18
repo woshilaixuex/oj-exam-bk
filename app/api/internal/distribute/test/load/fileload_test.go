@@ -27,7 +27,7 @@ func TestLoad(t *testing.T) {
 	svc.NewServiceContext(c)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	load.InitLoadServer(ctx, "./data/user_test.csv")
+	load.InitLoadServer(ctx, "./data/users_test.csv")
 	fmt.Print("haha")
 	go func() {
 		var s string
@@ -42,7 +42,7 @@ func TestPop(t *testing.T) {
 	var c config.Config
 	conf.MustLoad(*configFile, &c)
 	sctx := svc.NewServiceContext(c)
-	data, m, err := sctx.Redis.LPopAndDecrement("csd_test_l")
+	data, m, err := sctx.Redis.PopSetAndDecrement("csd_test_l")
 	if err != nil {
 		t.Fatalf("err: %v", err)
 		return

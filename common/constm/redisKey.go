@@ -10,8 +10,9 @@ package constm
 const (
 	PREFIX_KEY = "rule_"
 	// 当前策略
-	STRATEGY_KEY = PREFIX_KEY + "strategy"
-	UNIQUESET    = "unique_set"
+	STRATEGY_KEY   = PREFIX_KEY + "strategy"
+	RULE_USER_LOCK = PREFIX_KEY + "lock:"
+	UNIQUESET      = "unique_set"
 	// 不重复id
 	UNIQUESET_ID = "unique_set_id"
 )

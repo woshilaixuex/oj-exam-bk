@@ -16,7 +16,6 @@ type StartRequest struct {
 
 type StartResponse struct {
 	StudentID string `json:"student_id"`
-	Name      string `json:"name"`
 	Account   string `json:"account"`
 	Password  string `json:"password"`
 }
