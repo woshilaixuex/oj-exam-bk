@@ -5,33 +5,48 @@ import (
 	"net/http"
 
 	"github/lyr1cs/v0/oj-exam-backend/app/api/internal/svc"
-	"github/lyr1cs/v0/oj-exam-backend/common/httpm"
 
 	"github.com/zeromicro/go-zero/rest"
-	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
-	httpx.SetOkHandler(httpm.Succeedhandler)
 	server.AddRoutes(
 		[]rest.Route{
 			{
-				// 检查学生信息
 				Method:  http.MethodPost,
 				Path:    "/check",
 				Handler: CheckHandler(serverCtx),
 			},
 		},
 	)
+
 	server.AddRoutes(
 		[]rest.Route{
 			{
-				// 开始考试
 				Method:  http.MethodPost,
+				Path:    "/check-in",
+				Handler: CheckInHandler(serverCtx),
+			},
+		},
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodGet,
 				Path:    "/exam",
 				Handler: ExamHandler(serverCtx),
 			},
 		},
-		rest.WithJwt(serverCtx.Config.JwtAuth.AccessSecret),
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodPost,
+				Path:    "/check-out",
+				Handler: CheckOutHandler(serverCtx),
+			},
+		},
 	)
 }

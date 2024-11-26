@@ -18,14 +18,30 @@ type CheckResponse {
 	Token     string `json:"token"`
 }
 
-type StartRequest {}
+type StartRequest {
+	Token string `form:"token"`
+}
 
 type StartResponse {
 	StudentID string `json:"student_id"`
 	Account   string `json:"account"`
 	Password  string `json:"password"`
 }
+type CheckInRequest {
+	StudentID string `json:"student_id"`
+}
+type CheckInResponse {
+	QrBytes []byte `json:"qr"`
+}
 
+type CheckOutRequest {
+	Account  string `json:"account"`
+	Password string `json:"password"`
+}
+type CheckOutResponse {
+	StudentID string `json:"student_id"`
+	Score     int    `json:"score"`
+}
 service exam-api {
 	@doc (
 		summary: "检查学生信息"
@@ -34,14 +50,33 @@ service exam-api {
 	@handler CheckHandler
 	post /check (CheckRequest) returns (CheckResponse)
 }
-@server(
-	jwt: JwtAuth
-)
+
+service exam-api {
+	@doc (
+		summary: "签到"
+		desc:    "考生确认签到后向飞书群发送考生信息并生成二维码"
+	)
+	@handler CheckInHandler
+	post /check-in (CheckInRequest) returns (CheckInResponse)
+}
+
+//@server(
+//	jwt: JwtAuth
+//)
 service exam-api{
 	@doc (
 		summary: "开始考试"
 		desc:    "使用账户和密码开始考试，并返回学生的考试相关信息。"
 	)
 	@handler ExamHandler
-	post /exam (StartRequest) returns (StartResponse)
+	get /exam (StartRequest) returns (StartResponse)
+}
+
+service exam-api{
+	@doc (
+		summary: "签退"
+		desc:    "签退，获取成绩存数据库，并发消息到飞书"
+	)
+	@handler CheckOutHandler
+	post /check-out (CheckOutRequest) returns (CheckOutResponse)
 }
