@@ -42,7 +42,6 @@ func NewLoadRedisService(rediscli *redis.Redis) LoadService {
 
 // 初始化向redis提交list数据
 func (rs *LoadDeploy) UploadExamUsersToRedis(key string, users []constm.ExamUser) error {
-
 	for _, user := range users {
 		data, err := json.Marshal(user)
 		if err != nil {
