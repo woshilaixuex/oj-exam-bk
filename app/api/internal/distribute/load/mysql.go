@@ -18,10 +18,10 @@ func FindExamUser(dns string, userId string) *exam_account.Account {
 	return &account
 }
 
-func FindStudenIdtByAccountAndPassword(dns string, account string, password string) string {
+func FindStudenIdtByAccountAndPassword(dns string, account string) string {
 	db := NewGormDB(dns)
 	var student exam_account.Account
-	db.Model(exam_account.Account{}).Where("account = ? and password = ?", account, password).Find(&student)
+	db.Model(exam_account.Account{}).Where("account = ?", account).Find(&student)
 	return student.StudentId
 }
 

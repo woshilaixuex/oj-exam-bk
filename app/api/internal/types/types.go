@@ -30,8 +30,7 @@ type CheckInResponse struct {
 }
 
 type CheckOutRequest struct {
-	Account  string `json:"account"`
-	Password string `json:"password"`
+	Account string `json:"account"`
 }
 
 type CheckOutResponse struct {

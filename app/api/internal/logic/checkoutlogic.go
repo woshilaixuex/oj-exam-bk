@@ -49,7 +49,7 @@ func NewCheckOutLogic(ctx context.Context, svcCtx *svc.ServiceContext) *CheckOut
 func (l *CheckOutLogic) CheckOut(req *types.CheckOutRequest) (resp *types.CheckOutResponse, err error) {
 	// todo: add your logic here and delete this line
 	webhookURL := "https://open.feishu.cn/open-apis/bot/v2/hook/f0eaf3ec-c617-4c27-863a-a9448a729ad8"
-	studentId := load.FindStudenIdtByAccountAndPassword(l.svcCtx.Config.DB.DataSource, req.Account, req.Password)
+	studentId := load.FindStudenIdtByAccountAndPassword(l.svcCtx.Config.DB.DataSource, req.Account)
 	if studentId == "" {
 		return &types.CheckOutResponse{
 			StudentID: "账号或密码错误",
@@ -69,7 +69,7 @@ func (l *CheckOutLogic) CheckOut(req *types.CheckOutRequest) (resp *types.CheckO
 	rq, _ := http.NewRequest("GET", url, nil)
 
 	// 添加 Cookie 到请求头
-	rq.Header.Add("Cookie", "_ga=GA1.2.1938032973.1728895971; csrftoken=ztoxP736vfYDgSyH8N85Y2LoQziCIoOrwxPeedv44gScsbiDOsEHPTEHA6yv9hX7; sessionid=ugqylizesg3z6xr98hwsw4rr1d8pavev; _ga_59QEB25NR7=GS2.2.s1754807026$o22$g1$t1754811069$j60$l0$h0")
+	rq.Header.Add("Cookie", "_ga=GA1.2.1938032973.1728895971; csrftoken=V2XYFHfhKH7IrDBM6fEtG5VR3IVR7Zup89Hqd5V1m2JLiyjO8gULhq0jaaiheS9T; sessionid=hsglloqgnxugjxxppmpcljeuunpd15nv; _gid=GA1.2.693926491.1756951783; _gat=1; _ga_59QEB25NR7=GS2.2.s1756951784$o26$g1$t1756951878$j26$l0$h0")
 
 	// 发送请求
 	client := &http.Client{}
@@ -77,7 +77,7 @@ func (l *CheckOutLogic) CheckOut(req *types.CheckOutRequest) (resp *types.CheckO
 
 	// 读取响应
 	body, _ := ioutil.ReadAll(rp.Body)
-
+	//l.Infof("OJ原始响应：%s", string(body))
 	var response ContestRankResponse
 	if err = json.Unmarshal(body, &response); err != nil {
 		fmt.Printf("解析JSON失败: %v\n", err)
@@ -108,13 +108,16 @@ func (l *CheckOutLogic) CheckOut(req *types.CheckOutRequest) (resp *types.CheckO
 				logx.Errorf("%s", err.Error())
 			}
 			resp = &types.CheckOutResponse{
-				studentId,
-				response.Data.Results[0].TotalScore,
+				StudentID: studentId,
+				Score:     response.Data.Results[0].TotalScore,
 			}
 			return resp, nil
 		}
 	}
-	return
+	return &types.CheckOutResponse{
+		StudentID: "请确认此账号是否参加比赛",
+		Score:     0,
+	}, nil
 }
 
 func sendScoreToFeiShu(webhookURL string, userInfo *CheckoutFeiShuMsg) error {

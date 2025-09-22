@@ -35,8 +35,7 @@ type CheckInResponse {
 }
 
 type CheckOutRequest {
-	Account  string `json:"account"`
-	Password string `json:"password"`
+	Account string `json:"account"`
 }
 type CheckOutResponse {
 	StudentID string `json:"student_id"`
