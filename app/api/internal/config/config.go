@@ -19,4 +19,6 @@ type Config struct {
 	OjDomain struct {
 		Domain string
 	}
+	ContestId  string
+	WebHookUrl string
 }

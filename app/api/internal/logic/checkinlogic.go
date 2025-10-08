@@ -53,7 +53,7 @@ func (l *CheckInLogic) CheckIn(req *types.CheckInRequest) (resp *types.CheckInRe
 	// todo: add your logic here and delete this line
 	resp = &types.CheckInResponse{}
 	c = l.svcCtx.Config
-	webhookURL := "https://open.feishu.cn/open-apis/bot/v2/hook/f0eaf3ec-c617-4c27-863a-a9448a729ad8"
+	webhookURL := l.svcCtx.Config.WebHookUrl
 	info, err := l.svcCtx.EnrollTableModel.FindOneByStudentId(l.ctx, req.StudentID)
 	hour, _, _ := time.Now().Clock()
 	var time string

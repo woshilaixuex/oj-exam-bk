@@ -5,11 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/woshilaixuex/third/onlinejudge"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github/lyr1cs/v0/oj-exam-backend/app/api/internal/distribute/load"
 	"github/lyr1cs/v0/oj-exam-backend/app/api/internal/svc"
 	"github/lyr1cs/v0/oj-exam-backend/app/api/internal/types"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -19,18 +19,6 @@ type CheckOutLogic struct {
 	logx.Logger
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
-}
-
-type ContestRankResponse struct {
-	Error interface{} `json:"error"`
-	Data  struct {
-		Results []struct {
-			User struct {
-				Username string `json:"username"`
-			} `json:"user"`
-			TotalScore int `json:"total_score"`
-		} `json:"results"`
-	} `json:"data"`
 }
 
 type CheckoutFeiShuMsg struct {
@@ -48,7 +36,7 @@ func NewCheckOutLogic(ctx context.Context, svcCtx *svc.ServiceContext) *CheckOut
 
 func (l *CheckOutLogic) CheckOut(req *types.CheckOutRequest) (resp *types.CheckOutResponse, err error) {
 	// todo: add your logic here and delete this line
-	webhookURL := "https://open.feishu.cn/open-apis/bot/v2/hook/f0eaf3ec-c617-4c27-863a-a9448a729ad8"
+	webhookURL := l.svcCtx.Config.WebHookUrl
 	studentId := load.FindStudenIdtByAccountAndPassword(l.svcCtx.Config.DB.DataSource, req.Account)
 	if studentId == "" {
 		return &types.CheckOutResponse{
@@ -63,27 +51,18 @@ func (l *CheckOutLogic) CheckOut(req *types.CheckOutRequest) (resp *types.CheckO
 			Score:     0,
 		}, nil
 	}
-	url := "https://oj.dsstudio.tech/api/contest_rank?offset=0&limit=" + strconv.Itoa(200) + "&contest_id=23&force_refresh=0"
-	//url := "https://oj.dsstudio.tech/api/profile?username=" + req.Account
-	// 创建请求
-	rq, _ := http.NewRequest("GET", url, nil)
-
-	// 添加 Cookie 到请求头
-	rq.Header.Add("Cookie", "_ga=GA1.2.1938032973.1728895971; csrftoken=V2XYFHfhKH7IrDBM6fEtG5VR3IVR7Zup89Hqd5V1m2JLiyjO8gULhq0jaaiheS9T; sessionid=hsglloqgnxugjxxppmpcljeuunpd15nv; _gid=GA1.2.693926491.1756951783; _gat=1; _ga_59QEB25NR7=GS2.2.s1756951784$o26$g1$t1756951878$j26$l0$h0")
-
-	// 发送请求
-	client := &http.Client{}
-	rp, _ := client.Do(rq)
-
-	// 读取响应
-	body, _ := ioutil.ReadAll(rp.Body)
-	//l.Infof("OJ原始响应：%s", string(body))
-	var response ContestRankResponse
-	if err = json.Unmarshal(body, &response); err != nil {
-		fmt.Printf("解析JSON失败: %v\n", err)
-		return
+	tools := onlinejudge.NewOjTools()
+	params := onlinejudge.GetRankParams{
+		Offset:       "0",
+		Limit:        "200",
+		ContestId:    l.svcCtx.Config.ContestId,
+		ForceRefresh: "0",
 	}
-	for _, result := range response.Data.Results {
+	response, err := tools.GetExamRank(params)
+	if err != nil {
+		return nil, err
+	}
+	for _, result := range response.Results {
 		if result.User.Username == req.Account {
 			score := result.TotalScore
 			load.SaveScore(l.svcCtx.Config.DB.DataSource, studentId, score)
@@ -109,7 +88,7 @@ func (l *CheckOutLogic) CheckOut(req *types.CheckOutRequest) (resp *types.CheckO
 			}
 			resp = &types.CheckOutResponse{
 				StudentID: studentId,
-				Score:     response.Data.Results[0].TotalScore,
+				Score:     score,
 			}
 			return resp, nil
 		}

@@ -1,6 +1,8 @@
 module github/lyr1cs/v0/oj-exam-backend
 
-go 1.21.12
+go 1.22.10
+
+toolchain go1.24.2
 
 require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
@@ -36,6 +38,7 @@ require (
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/redis/go-redis/v9 v9.7.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
+	github.com/woshilaixuex/third v0.1.0 // indirect
 	go.opentelemetry.io/otel v1.24.0 // indirect
 	go.opentelemetry.io/otel/exporters/jaeger v1.17.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.24.0 // indirect
