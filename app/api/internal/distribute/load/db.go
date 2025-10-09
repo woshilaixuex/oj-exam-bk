@@ -4,10 +4,9 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github/lyr1cs/v0/oj-exam-backend/common/constm"
 	"strconv"
-
-	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
 /*
@@ -29,6 +28,8 @@ type LoadService interface {
 	AddToUniqueSet(key, randomSuffix string) (int, error)
 	GetStrategy(key string) (constm.StrategyModel, error)
 	ChangeStrategy(model constm.StrategyModel) error
+	StoreToken(userID string, token string) error
+	FindUserByToken(token string) string
 }
 type LoadDeploy struct {
 	Redis *redis.Redis
@@ -107,4 +108,20 @@ func (rs *LoadDeploy) ChangeStrategy(model constm.StrategyModel) error {
 		return fmt.Errorf("failed to set redis strategy model err: %w", err)
 	}
 	return nil
+}
+
+// 存储token和studentId
+func (rs *LoadDeploy) StoreToken(userID string, token string) error {
+	qrKey := constm.QR_TOKEN + token
+	if err := rs.Redis.Set(qrKey, userID); err != nil {
+		return fmt.Errorf("failed to push token to Redis: %w", err)
+	}
+	rs.Redis.Expire(qrKey, 3600)
+	return nil
+}
+
+func (rs *LoadDeploy) FindUserByToken(token string) (userId string) {
+	qrKey := constm.QR_TOKEN + token
+	userId, _ = rs.Redis.Get(qrKey)
+	return
 }

@@ -15,4 +15,6 @@ const (
 	UNIQUESET      = "unique_set"
 	// 不重复id
 	UNIQUESET_ID = "unique_set_id"
+	//为qr分配
+	QR_TOKEN = "qr:"
 )

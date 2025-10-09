@@ -12,10 +12,28 @@ type CheckResponse struct {
 }
 
 type StartRequest struct {
+	Token string `form:"token"`
 }
 
 type StartResponse struct {
 	StudentID string `json:"student_id"`
 	Account   string `json:"account"`
 	Password  string `json:"password"`
+}
+
+type CheckInRequest struct {
+	StudentID string `json:"student_id"`
+}
+
+type CheckInResponse struct {
+	QrBytes []byte `json:"qr"`
+}
+
+type CheckOutRequest struct {
+	Account string `json:"account"`
+}
+
+type CheckOutResponse struct {
+	StudentID string `json:"student_id"`
+	Score     int    `json:"score"`
 }
